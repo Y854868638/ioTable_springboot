@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="./js/jquery-2.1.1.min.js" type="text/javascript"></script>
+		<script src="./js/jquery.cookie.js" type="text/text/javascript"></script>
+	</head>
+	<body>
+		<fieldset>
+		        <legend id="tatil">修改</legend>
+		        <dl>
+		            <dt><label >Tag</label></dt>
+		            <dd><input id="Tag" type="text"  name="Tag" /></dd>
+		            <dt><label >Describe</label></dt>
+		            <dd><input id="Describe" type="text"  name="Describe" /></dd>
+		           	<dt><label>Type</label></dt>
+		           	<dd><input id="Type" type="text" name="Type" /></dd>
+		           	<dt><label>IoAdd</label></dt>
+		           	<dd><input id="IoAdd" type="text"  name="IoAdd" ></dd>
+		           	<dt><label>Remark</label></dt>
+		           	<dd><textarea id="Remark" rows="5" cols="30" name="Remark"></textarea><br></dd>
+		            <dt><button id="submit" />确认修改</dt>
+		        </dl>
+		    </fieldset>
+		
+	</body>
+	<script type="text/javascript">
+		
+		$(document).ready(function(){
+			
+			     $.getUrlParam = function (name) {
+			     var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");//构造一个含有目标参数的正则表达式对象
+			     var r = window.location.search.substr(1).match(reg);//匹配目标参数
+			     if (r != null) return unescape(r[2]); return null;//返回参数值
+				}	
+			 
+				$("#tatil").append($.getUrlParam('Tag'));
+				var Tag=$.getUrlParam('Tag')
+				jQuery(window).load(function(){  //load函数
+				        $.ajax({
+						 type: "POST",
+						 url:"http://192.168.124.131:8088/IO/findByTag",
+						 dataType: "json",
+						 data:Tag,
+						 contentType : "application/json;charsetset=UTF-8",
+						success: function(data){  
+							  jQuery.each(data, function(i,item){  
+									if(data.length == 1){
+										$("#Tag").val(Tag)
+										$("#Describe").val(item.describe)
+										 $("#Type").val(item.type)
+										 $("#IoAdd").val(item.ioAdd)
+										 $("#Remark").val(item.remark)
+									}else{
+									 $("#tagList").prepend("<option>"+item.tag+"</option>") 
+									}
+							  });
+							},  
+						  error: function(){  
+							   return;  
+						   }  
+				        })
+				    });
+				
+				$("#submit").click(function(){
+					var Describe=$("#Describe").val();
+					var Type=$("#Type").val();
+					var IoAdd=$("#IoAdd").val();
+					var Remark=$("#Remark").val();
+					var data={"Tag":Tag,"Describe":Describe,"Type":Type,"IoAdd":IoAdd,"Remark":Remark};
+					$.ajax({
+						 type: "POST",
+						 url:"http://192.168.124.131:8088/IO/editByTag",
+						 dataType: "json",
+						 data:data,
+						 //contentType : "application/json;charsetset=UTF-8",
+						 success: function(data){  
+							 if(data=1){
+								 alert("修改成功");
+								$(window).attr('location','http://127.0.0.1:8848/Io/index.html');
+							 }else{
+								 alert("修改失败");
+								$(window).attr('location','http://127.0.0.1:8848/Io/index.html');
+							 }
+							},  
+						 error: function(){  
+							 alert("修改失败");
+							 $(window).attr('location','http://127.0.0.1:8848/Io/index.html');
+							   return;  
+						   }  
+					})
+				});
+				
+		});
+		
+	</script>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<script src="./js/jquery-2.1.1.min.js" type="text/javascript"></script>
+		<script src="./js/jquery.cookie.js" type="text/text/javascript"></script>
+	</head>
+	<body>
+		<div>
+			<form>
+				
+				<input type="button" id="clean" value="清空界面" />
+				<input type="button" id="addData" value="添加文本框" />
+			</form>
+		</div>
+		<div id="table1">
+			<table width="100%" border="1">
+				<tr  id="head1">
+					<th width='16%'>Tag</th>
+					<th width='16%'>Describe</th>
+					<th width='16%'>Type</th>
+					<th width='16%'>IoAdd</th>
+					<th width='16%'>Remark</th>
+					<th width='16%'>操作</th>
+				</tr>	
+				     
+			</table>
+		</div>
+		
+	</body>
+	<script type="text/javascript">
+		
+		$(document).ready(function(){
+			
+			 $.ajax({
+				 type: "POST",
+				 url:"http://192.168.124.131:8088/IO/selectAllTag",
+				 dataType: "json",
+				 data:{},
+				 contentType : "application/json;charsetset=UTF-8",
+				success: function(data){  
+					  jQuery.each(data, function(i,item){ 
+							  alert(item)
+					  });  
+					},  
+				  error: function(){  
+					  alert("Tag写入失败")
+					   return;  
+				   }  
+			 });
+			 $("#addData").click(function(){
+				 var text1="<tr id='tdTag'><td width='16%'> <input id='addTag' type='text' list='tagList'><datalist id='tagList'><option>...</option></datalist></td>"
+				 var text2=text1+"<td width='16%' id='describe'><input id='Describe' type='text'  name='Describe' /></td>"
+				 var text3=text2+"<td width='16%' id='type'><input id='Type' type='text'  name='Type' /></td>"
+				 var text4=text3+"<td width='16%' id='ioAdd'><input id='IoAdd' type='text'  name='IoAdd' /></td>"
+				 var text5=text4+"<td width='16%' id='remark'><input id='Remark' type='text'  name='Remark' /></td>"
+				 var text6=text5+"<td width='16%' id='cz'></tr>	"
+				 $("#head1").after(text6);
+				 //清空界面按钮
+				 $("#clean").click(function(){
+					 $("#tdTag").remove();
+				 })
+				 
+				 
+				$.ajax({
+					 type: "POST",
+					 url:"http://192.168.124.131:8088/IO/bjAllTag",
+					 dataType: "json",
+					 data:{},
+					 contentType : "application/json;charsetset=UTF-8",
+					success: function(data){  
+						  if(!(data == 1)){
+							  alert("表中TAG发生变化");
+							  $("#cz").append("&nbsp<button id='add'>增加</button>&nbsp")
+							 //增加
+							 $("#add").click(function(){
+							 	var Tag=$("#addTag").val();
+							 	var Describe=$("#Describe").val();
+							 	var Type=$("#Type").val();
+							 	var IoAdd=$("#IoAdd").val();
+							 	var Remark=$("#Remark").val();
+							 	var data={"Tag":Tag,"Describe":Describe,"Type":Type,"IoAdd":IoAdd,"Remark":Remark};
+							 	$.ajax({
+							 		 type: "POST",
+							 		 url:"http://192.168.124.131:8088/IO/addTag",
+							 		 dataType: "json",
+							 		 data:data,
+							 		 //contentType : "application/json;charsetset=UTF-8",
+							 		 success: function(data){  
+							 			 if(data=1){
+							 				 alert("添加成功");
+							 				$(window).attr('location','http://127.0.0.1:8848/Io/index.html');
+							 			 }else{
+							 				 alert("添加失败");
+							 				//$(window).attr('location','http://127.0.0.1:8848/Io/index.html');
+							 			 }
+							 			},  
+							 		 error: function(){  
+							 			 alert("添加失败");
+							 			// $(window).attr('location','http://127.0.0.1:8848/Io/index.html');
+							 			   return;  
+							 		   }  
+							 	})
+							 });	
+						  }
+						  },
+					  error: function(){  
+						  alert("失败")
+						   return;  
+					   }  
+				}); 
+				 
+				 //添加键盘弹出事件，查找数据
+				 $("#addTag").keyup(function(){
+					 var Tag=$("#addTag").val();
+					 $.ajax({
+						 type: "POST",
+						 url:"http://192.168.124.131:8088/IO/findByTag",
+						 dataType: "json",
+						 data:Tag,
+						 contentType : "application/json;charsetset=UTF-8",
+						 success: function(data){  
+							  jQuery.each(data, function(i,item){  
+									if(data.length == 1){
+										$("#Describe").val(item.describe)
+										$("#Type").val(item.type)
+										$("#IoAdd").val(item.ioAdd)
+										$("#Remark").val(item.remark)
+										
+										$("#cz").prepend("<button id='edit' >修改</button>&nbsp<button id='delete'>删除</button></td>")
+										var Tag=item.tag;
+										//删除
+										$("#delete").click(function(){
+											$.ajax({
+												type: "POST",
+												url:"http://192.168.124.131:8088/IO/deleteByTag",
+												dataType: "json",
+												data:Tag,
+												contentType : "application/json;charsetset=UTF-8",
+												success: function(data){
+														if(data==1){
+															alert("删除成功")
+															$(window).attr('location','http://127.0.0.1:8848/Io/index.html');
+														}else if(data==2){
+															alert("删除失败")
+														}else{
+															alert("删除异常")
+														}
+													},  
+												  error: function(){  
+													   return;  
+												   }  
+											})
+										})
+										//修改
+										$("#edit").click(function(){
+											var Tag=$("#addTag").val();
+											var Describe=$("#Describe").val();
+											var Type=$("#Type").val();
+											var IoAdd=$("#IoAdd").val();
+											var Remark=$("#Remark").val();
+											var data={"Tag":Tag,"Describe":Describe,"Type":Type,"IoAdd":IoAdd,"Remark":Remark};
+											//alert(data.Tag);
+											$.ajax({
+												 type: "POST",
+												 url:"http://192.168.124.131:8088/IO/editByTag",
+												 dataType: "json",
+												 data:data,
+												 //contentType : "application/json;charsetset=UTF-8",
+												 success: function(data){  
+													 if(data=1){
+														 alert("修改成功");
+														//$(window).attr('location','http://127.0.0.1:8848/Io/index.html');
+													 }else{
+														 alert("修改失败");
+														//$(window).attr('location','http://127.0.0.1:8848/Io/index.html');
+													 }
+													},  
+												 error: function(){  
+													 alert("修改失败");
+													// $(window).attr('location','http://127.0.0.1:8848/Io/index.html');
+													   return;  
+												   }  
+											})
+										})
+										
+									}else{
+									 $("#tagList").prepend("<option>"+item.tag+"</option>") 
+									}
+							  });
+							},  
+						  error: function(){  
+							   return;  
+						   }  
+					 })
+					  $("#tagList").empty();
+					  $("#cz").empty();
+				 });
+
+			 });
+			
+			 
+			 
+		});
+		
+	</script>
+</html>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.it.mapper.IoTableMapper">
+    <select id="findByTag" parameterType="IoTable" resultType="IoTable">
+        select top 8 * from IoTable where Tag like CONCAT('%',#{Tag},'%');
+    </select>
+    <update id="editByTag" parameterType="IoTable">
+        update IoTable
+        <set>
+            <if test="Tag!=null and Tag!=''">
+                Tag=#{Tag},
+            </if>
+            <if test="Describe!=null and Describe!=''">
+                Describe=#{Describe},
+            </if>
+            <if test="Type!=null and Type!=''">
+                Type=#{Type},
+            </if>
+            <if test="IoAdd!=null and IoAdd!=''">
+                IoAdd=#{IoAdd},
+            </if>
+            <if test="Remark!=null and Remark !=''">
+                Remark=#{Remark},
+            </if>
+        </set>
+        where Tag=#{Tag};
+    </update>
+    <select id="findTag"  resultType="java.lang.String">
+         select  Tag from IoTable
+    </select>
+    <delete id="deleteByTag" parameterType="IoTable">
+        delete  from IoTable where Tag = #{Tag}
+    </delete>
+    <insert id="addTag" parameterType="IoTable">
+        insert into IoTable (Tag,Describe,Type,IoAdd,Remark) values (#{Tag},#{Describe},#{Type},#{IoAdd},#{Remark})
+    </insert>
+</mapper>
